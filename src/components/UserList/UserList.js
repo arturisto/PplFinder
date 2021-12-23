@@ -7,7 +7,9 @@ import FavoriteIcon from "@material-ui/icons/Favorite";
 import * as S from "./style";
 
 const UserList = ({ users, isLoading }) => {
+  const countries = ["Brazil", "Australia", "Canada", "Germany", "Norway"];
   const [hoveredUserId, setHoveredUserId] = useState();
+  const [selectedCountries, setSelectedCountries] = useState([]);
 
   const handleMouseEnter = (index) => {
     setHoveredUserId(index);
@@ -17,42 +19,52 @@ const UserList = ({ users, isLoading }) => {
     setHoveredUserId();
   };
 
+  const handleCheckboxClick = (country) => {
+    if(window.event.target.checked) {
+      setSelectedCountries(selectedCountries=> [...selectedCountries, country]);
+    } else {
+      setSelectedCountries(selectedCountries.length === 1 ? [] : selectedCountries.filter(function(countryItem){ return countryItem !== country}));
+    }
+  }
+
   return (
     <S.UserList>
       <S.Filters>
-        <CheckBox value="BR" label="Brazil" />
-        <CheckBox value="AU" label="Australia" />
-        <CheckBox value="CA" label="Canada" />
-        <CheckBox value="DE" label="Germany" />
+        {console.log(selectedCountries)}
+        {countries.map((country, index) => {
+          return (<CheckBox key={index} value={country} label={country} onChange={()=>handleCheckboxClick(country)} />)
+        })}
       </S.Filters>
       <S.List>
         {users.map((user, index) => {
-          return (
-            <S.User
-              key={index}
-              onMouseEnter={() => handleMouseEnter(index)}
-              onMouseLeave={handleMouseLeave}
-            >
-              <S.UserPicture src={user?.picture.large} alt="" />
-              <S.UserInfo>
-                <Text size="22px" bold>
-                  {user?.name.title} {user?.name.first} {user?.name.last}
-                </Text>
-                <Text size="14px">{user?.email}</Text>
-                <Text size="14px">
-                  {user?.location.street.number} {user?.location.street.name}
-                </Text>
-                <Text size="14px">
-                  {user?.location.city} {user?.location.country}
-                </Text>
-              </S.UserInfo>
-              <S.IconButtonWrapper isVisible={index === hoveredUserId}>
-                <IconButton>
-                  <FavoriteIcon color="error" />
-                </IconButton>
-              </S.IconButtonWrapper>
-            </S.User>
-          );
+          if(selectedCountries.length > 0 && selectedCountries.indexOf(user.location.country) < 0 ) return ""
+          else
+            return (
+              <S.User
+                key={index}
+                onMouseEnter={() => handleMouseEnter(index)}
+                onMouseLeave={handleMouseLeave}
+              >
+                <S.UserPicture src={user?.picture.large} alt="" />
+                <S.UserInfo>
+                  <Text size="22px" bold>
+                    {user?.name.title} {user?.name.first} {user?.name.last}
+                  </Text>
+                  <Text size="14px">{user?.email}</Text>
+                  <Text size="14px">
+                    {user?.location.street.number} {user?.location.street.name}
+                  </Text>
+                  <Text size="14px">
+                    {user?.location.city} {user?.location.country}
+                  </Text>
+                </S.UserInfo>
+                <S.IconButtonWrapper isVisible={index === hoveredUserId}>
+                  <IconButton>
+                    <FavoriteIcon color="error" />
+                  </IconButton>
+                </S.IconButtonWrapper>
+              </S.User>
+            );
         })}
         {isLoading && (
           <S.SpinnerWrapper>
