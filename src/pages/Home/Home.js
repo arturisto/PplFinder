@@ -8,12 +8,20 @@ import * as S from "./style";
 
 const Home = (props) => {
   const [ favourites, setFavourites ] = useState([]);
-  const { users, isLoading } = usePeopleFetch();
+  const { users, isLoading, fetchUsers } = usePeopleFetch();
+  const [updatedList, setUpdatesList] = useState([])
+  const[ loading, setLoading] = useState(true)
   
-  console.log(props);
+
   useEffect(()=> {
     setFavourites(getAllFavourites());
   },[])
+
+  useEffect(()=> {
+    if(updatedList.length > 1) return;
+    setUpdatesList(users);
+    setLoading(false);
+  }, [users])
 
   const handleClickFavourites = (index) => {
     if(!favourites.includes(index)){
@@ -31,6 +39,11 @@ const Home = (props) => {
     }
   }
 
+  const handleFetchMoreUsers = async () => {
+    const moreUsers = await fetchUsers()
+    setUpdatesList(updatedList.concat(moreUsers));
+  }
+
   return (
     <S.Home>
       <S.Content>
@@ -40,8 +53,8 @@ const Home = (props) => {
           </Text>
         </S.Header>
         {props.tab === 0 ?
-        <UserList users={users} isLoading={isLoading} favourites={favourites} handleFavourites={handleClickFavourites} />
-        : <FavouriteList users={users} favourites={favourites} handleFavourites={handleClickFavourites} />
+        <UserList users={updatedList}  isLoading={loading} favourites={favourites} handleFavourites={handleClickFavourites} handleFetchMoreUsers={handleFetchMoreUsers}  />
+        : <FavouriteList users={updatedList} favourites={favourites} handleFavourites={handleClickFavourites} />
         }
       </S.Content>
     </S.Home>

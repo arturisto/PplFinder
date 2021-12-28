@@ -8,7 +8,6 @@ const AppRouter = () => {
   const [currentTab, setCurrentTab] = useState(0)
 
   const handleSetCurrentTab = (newTab) => {
-    console.log(newTab);
     setCurrentTab(newTab);
   }
 

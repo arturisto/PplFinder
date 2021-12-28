@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from "react";
+import React, { useEffect, useState, useRef } from "react";
 import Text from "components/Text";
 import Spinner from "components/Spinner";
 import CheckBox from "components/CheckBox";
@@ -7,10 +7,13 @@ import FavoriteIcon from "@material-ui/icons/Favorite";
 import { addToFavourites, removeFromFavourites, getAllFavourites } from "../../utils/fav_storage"
 import * as S from "./style";
 
-const UserList = ({ users, isLoading, favourites, handleFavourites }) => {
+const UserList = ({ users, isLoading, favourites, handleFavourites, handleFetchMoreUsers }) => {
   const countries = ["Brazil", "Australia", "Canada", "Germany", "Norway"];
   const [hoveredUserId, setHoveredUserId] = useState();
   const [selectedCountries, setSelectedCountries] = useState([]);
+  const [refireObserve, setRefireObserve] = useState(false);
+  const observableRef = useRef(null);
+  const observer = useRef(null);
 
   const handleMouseEnter = (index) => {
     setHoveredUserId(index);
@@ -31,6 +34,22 @@ const UserList = ({ users, isLoading, favourites, handleFavourites }) => {
   const handleClickFavourites = (index) => {
    handleFavourites(index);
   }
+  const getMoreItems = (entries) => {
+    if(!entries[0].isIntersecting) return;
+    if(!observableRef.current) return;
+    handleFetchMoreUsers();
+  }
+  useEffect(()=> {
+    if(observer.current) observer.current.disconnect();
+    observer.current = new IntersectionObserver(getMoreItems, {root: null, rootMargin: "0px", threshold:1.0, trackVisibility:true, delay:100})
+    if(observableRef.current) {
+      observer.current.observe(observableRef.current)
+    }
+    return ()=> {
+      if(observer.current) observer.current.disconnect();
+    }
+
+  }, [observableRef.current, refireObserve])
  
   return (
     <S.UserList>
@@ -39,11 +58,11 @@ const UserList = ({ users, isLoading, favourites, handleFavourites }) => {
           return (<CheckBox key={index} value={country} label={country} onChange={()=>handleCheckboxClick(country)} />)
         })}
       </S.Filters>
-      <S.List>
+      
+      <S.List id="scrollovserve">
         {users.map((user, index) => {
           if(selectedCountries.length > 0 && selectedCountries.indexOf(user.location.country) < 0 ) return ""
           else{
-            
             return (
               <S.User
                 key={index}
@@ -70,13 +89,18 @@ const UserList = ({ users, isLoading, favourites, handleFavourites }) => {
                 </S.IconButtonWrapper>
               </S.User>
             );}
-        })}
-        {isLoading && (
+            
+        })
+        
+        }
+        {users.length === 0 ? "" : <div className="observable" id="observable" ref={observableRef}></div> }
+        {isLoading ? (
           <S.SpinnerWrapper>
             <Spinner color="primary" size="45px" thickness={6} variant="indeterminate" />
           </S.SpinnerWrapper>
-        )}
+        ) : ""}
       </S.List>
+     
     </S.UserList>
   );
 };

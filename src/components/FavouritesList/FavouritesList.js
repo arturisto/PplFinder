@@ -1,12 +1,10 @@
-import React, { useEffect, useState } from "react";
+import React from "react";
 import Text from "components/Text";
 import IconButton from "@material-ui/core/IconButton";
 import FavoriteIcon from "@material-ui/icons/Favorite";
-import { addToFavourites, removeFromFavourites, getAllFavourites } from "../../utils/fav_storage"
 import * as S from "./style";
 
 const FavouritesList = ({ users, favourites, handleFavourites }) => {
-  console.log(favourites);
   return (
     <S.FavouritesList>
       <S.List>
